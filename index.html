@@ -128,6 +128,7 @@
   .area b{text-align:right;font-size:12px;color:var(--muted)}
   .prof{font-size:12.5px;color:var(--muted);margin:8px 0 2px}
   .tag.r{background:#E4F1EA;color:#3F7D5C} .tag.s{background:#FCE7F0;color:#B44D7E}
+  .freq{display:inline-block;margin:0 0 10px;background:var(--peach-l);color:#A8573F;font-weight:700;font-size:13.5px;padding:7px 12px;border-radius:99px}
 </style>
 </head>
 <body>
@@ -136,10 +137,10 @@
 
   <!-- INTRO -->
   <section id="intro" class="card fade">
-    <div class="eyebrow">Test di livello · 4 minuti</div>
+    <div class="eyebrow">Test di livello · 1 minuto</div>
     <h2>Che livello sei, <em>davvero?</em></h2>
-    <p class="lead">18 domande divise in 5 aree: profilo, allenamento, tecnica, alimentazione e recupero. Alla fine ricevi il tuo livello (Base, Medio o Avanzato), il punteggio per ogni area e il punto su cui lavorare per primo.</p>
-    <div class="pills"><span class="pill">🏋️ Allenamento</span><span class="pill">🎯 Tecnica</span><span class="pill p">🥗 Alimentazione</span><span class="pill">😴 Recupero</span></div>
+    <p class="lead">5 domande sul tuo allenamento con i pesi. Alla fine scopri se sei Principiante, Intermedio o Avanzato e quante volte a settimana allenarti.</p>
+    <div class="pills"><span class="pill">🏋️ Esperienza</span><span class="pill">🎯 Tecnica</span><span class="pill p">📅 Frequenza</span><span class="pill">😴 Recupero</span></div>
     <p class="hint">Rispondi in modo sincero: non ci sono risposte giuste o sbagliate.</p>
     <button class="btn" onclick="start()">Inizia il quiz</button>
   </section>
@@ -155,7 +156,7 @@
   <section id="loading" class="card hide" style="text-align:center;padding:48px 22px">
     <div class="spin"></div>
     <h2 style="font-size:22px;margin-top:20px">Analizzo le tue risposte…</h2>
-    <p class="lead" style="font-size:14px">Calcolo il punteggio per ogni area</p>
+    <p class="lead" style="font-size:14px">Calcolo il tuo livello</p>
   </section>
 
   <!-- RESULT -->
@@ -163,10 +164,10 @@
     <div class="card fade rcard">
       <div class="level"><div class="badge" id="rEmoji">🍑</div><div><div class="eyebrow">Il tuo livello</div><h2 id="rTitle">Medio</h2></div></div>
       <div class="meter"><span id="m1"></span><span id="m2"></span><span id="m3"></span></div>
-      <div class="meter-l"><span>Base</span><span>Medio</span><span>Avanzato</span></div>
+      <div class="meter-l"><span>Principiante</span><span>Intermedio</span><span>Avanzato</span></div>
+      <div class="freq" id="rFreq"></div>
       <p class="rtext" id="rText"></p>
-      <div class="weak" id="rWeak"></div>
-      <details class="tips"><summary>Punteggio per area e consigli <span>▾</span></summary><div class="areas" id="rAreas"></div><div class="prof" id="rProf"></div><ul class="focus" id="rFocus"></ul></details>
+      <details class="tips"><summary>Consigli per il tuo livello <span>▾</span></summary><ul class="focus" id="rFocus"></ul></details>
     </div>
 
     <div class="card section fade ccard">
@@ -240,53 +241,30 @@
 </div>
 
 <script>
-// area: p=profilo (non conta), a=allenamento, t=tecnica, n=alimentazione, r=recupero
-const AREAS={a:'Allenamento',t:'Tecnica',n:'Alimentazione',r:'Recupero'};
-const TAGC={p:'s',a:'t',t:'t',n:'n',r:'r'};
-const TAGL={p:'Su di te',a:'Allenamento',t:'Tecnica e forza',n:'Alimentazione',r:'Recupero e progressi'};
 const Q=[
- {ar:'p',q:'Qual è il tuo obiettivo principale?',a:['Aumentare volume e forma dei glutei','Tonificare e definire','Diventare più forte']},
- {ar:'p',q:'Dove ti alleni di solito?',a:['In palestra','A casa con qualche attrezzo','A casa a corpo libero']},
- {ar:'a',q:'Da quanto ti alleni con costanza?',a:['Meno di 6 mesi (o sto ricominciando)','Da 6 mesi a 2 anni','Da più di 2 anni']},
- {ar:'a',q:'Quante volte ti alleni a settimana, in totale?',a:['1–2 volte','3–4 volte','5 o più volte']},
- {ar:'a',q:'Quante volte a settimana alleni i glutei?',a:['0–1 volta','2 volte','3 o più volte, con una scheda']},
- {ar:'a',q:'Come organizzi i tuoi allenamenti?',a:['Improvviso in base a come mi sento','Seguo schede o video trovati online','Ho una scheda strutturata che aggiorno ogni 4–8 settimane']},
- {ar:'a',q:'Il sovraccarico progressivo…',a:['Non so bene cosa sia','So cos\'è, ma non lo seguo sempre','Annoto i carichi e li aumento nel tempo']},
- {ar:'t',q:'Com\'è il tuo hip thrust?',a:['Non l\'ho mai fatto o solo a corpo libero','Con bilanciere, carico leggero o medio','Con carichi importanti, vicino o sopra il mio peso']},
- {ar:'t',q:'Squat e stacchi rumeni?',a:['Non li faccio o ho dubbi sulla tecnica','Li faccio con pesi moderati','Li eseguo con buona tecnica e carichi impegnativi']},
- {ar:'t',q:'Durante gli esercizi senti lavorare i glutei?',a:['Spesso sento più gambe o schiena','Dipende dall\'esercizio','Sì, controllo bene tecnica ed esecuzione']},
- {ar:'t',q:'Quanto ti avvicini al cedimento nelle serie?',a:['Mi fermo appena inizia a bruciare','Le ultime ripetizioni sono faticose','Lavoro a 1–2 ripetizioni dal cedimento e so valutarlo']},
- {ar:'n',q:'Le proteine durante la giornata…',a:['Non le conto','Ci provo, ma spesso non arrivo all\'obiettivo','Arrivo quasi sempre al mio target']},
- {ar:'n',q:'Le tue calorie giornaliere?',a:['Non so quante ne mangio, spesso poche','Ho un\'idea ma non le monitoro','Conosco il mio fabbisogno e mangio in leggero surplus']},
- {ar:'n',q:'Come sono i tuoi pasti?',a:['Salto spesso i pasti','3 pasti, a volte irregolari','3–5 pasti regolari, con proteine a ogni pasto']},
- {ar:'n',q:'Cosa mangi prima e dopo l\'allenamento?',a:['Mi alleno a digiuno o mangio poco','A volte faccio uno spuntino','Pianifico il pasto pre e post allenamento']},
- {ar:'r',q:'Quanto dormi?',a:['Meno di 6 ore','6–7 ore, non sempre bene','7–8 ore con orari regolari']},
- {ar:'r',q:'Quanta acqua bevi al giorno?',a:['Meno di 1 litro','1–1,5 litri','2 litri o più']},
- {ar:'r',q:'Come controlli i tuoi progressi?',a:['Non misuro nulla','Mi peso ogni tanto','Foto, misure e carichi ogni 2–4 settimane']}
+ {tag:'t',label:'Esperienza',q:'Da quanto tempo ti alleni regolarmente con i pesi?',a:['Sono alle prime armi, mi sono allenata in modo discontinuo oppure ho appena ripreso ad allenarmi.','Mi alleno regolarmente con i pesi da diversi mesi o più.','Mi alleno con costanza con i pesi da diversi anni.']},
+ {tag:'t',label:'Tecnica',q:'Quanto ti senti sicura nell’eseguire Hip Thrust, Stacchi Rumeni (RDL) e Split Squat?',a:['Sto ancora imparando a eseguire correttamente uno o più di questi esercizi.','Riesco a eseguire tutti e tre gli esercizi autonomamente, utilizzando i pesi e mantenendo un buon controllo del movimento.','Hip Thrust con bilanciere, Stacchi Rumeni con bilanciere e Bulgarian Split Squat con pesi fanno già parte della mia routine di allenamento.']},
+ {tag:'n',label:'Frequenza',q:'Quante volte alla settimana alleni gambe o glutei con i pesi?',a:['Una volta a settimana o mai.','Due volte a settimana.','Tre o più volte a settimana.']},
+ {tag:'r',label:'Recupero',q:'Come si sentono solitamente le tue gambe quando arriva il momento del successivo allenamento di gambe o glutei?',a:['Spesso devo ridurre l’intensità o il numero di esercizi perché sento ancora dolore muscolare o stanchezza.','Generalmente mi sento recuperata e pronta a svolgere l’allenamento come previsto.','Mi sento recuperata e pronta ad allenarmi anche quando alleno gambe o glutei tre volte a settimana.']},
+ {tag:'s',label:'Progressi',q:'Quanto spesso tieni traccia dei pesi utilizzati e delle ripetizioni eseguite?',a:['Raramente. Di solito scelgo i pesi direttamente durante l’allenamento.','Qualche volta. Generalmente ricordo quali pesi ho utilizzato nell’allenamento precedente.','Quasi a ogni allenamento. Registro pesi e ripetizioni per capire quando aumentare il carico o il numero di ripetizioni.']}
 ];
 
 const R = {
-  base:{title:'Base', emoji:'🌱', on:1,
-    text:'Sei all\'inizio del percorso, ed è il momento migliore: con le basi giuste i risultati arrivano in fretta.',
-    focus:[['🍑','Tecnica prima dei carichi','Impara bene hip thrust, squat e affondi e a sentire i glutei.'],
-           ['📅','2 allenamenti glutei a settimana','Costanza prima dell\'intensità.'],
-           ['🥚','Proteine a ogni pasto','Inizia a tracciarle nell\'app: la barra ti dice quanto ti manca.']]},
-  medio:{title:'Medio', emoji:'🔥', on:2,
-    text:'Hai già una buona base. Ora serve struttura: carichi che salgono e un\'alimentazione costante.',
-    focus:[['📈','Sovraccarico progressivo','Annota i carichi e alzali poco alla volta.'],
-           ['🍽️','Leggero surplus calorico','Mangia un po\' di più ogni giorno, non solo nei giorni di allenamento.'],
-           ['🎯','Target proteine fisso','Usa le ricette dell\'app per arrivarci senza fatica.']]},
-  avanzato:{title:'Avanzato', emoji:'👑', on:3,
+  base:{title:'Principiante', freq:'2 allenamenti a settimana', emoji:'🌱', on:1,
+    text:'Sei all’inizio del percorso, ed è il momento migliore: con le basi giuste i risultati arrivano in fretta.',
+    focus:[['🍑','Tecnica prima dei carichi','Impara bene Hip Thrust, Stacchi Rumeni e Split Squat.'],
+           ['📅','2 allenamenti a settimana','Costanza prima dell’intensità, con il giusto recupero.'],
+           ['🥚','Proteine a ogni pasto','Tracciale nell’app: la barra ti dice quanto ti manca.']]},
+  medio:{title:'Intermedio', freq:'3 allenamenti a settimana', emoji:'🔥', on:2,
+    text:'Hai già una buona base. Ora serve struttura: carichi che salgono e un’alimentazione costante.',
+    focus:[['📈','Sovraccarico progressivo','Annota pesi e ripetizioni e aumentali poco alla volta.'],
+           ['🍽️','Leggero surplus calorico','Mangia un po’ di più ogni giorno, non solo nei giorni di allenamento.'],
+           ['🎯','Target proteine fisso','Usa le ricette dell’app per arrivarci senza fatica.']]},
+  avanzato:{title:'Avanzato', freq:'3 allenamenti a settimana', emoji:'👑', on:3,
     text:'Sai già cosa fai. Il lavoro adesso è nei dettagli: volume, varietà e recupero.',
     focus:[['🏋️','Periodizza il volume','Alterna settimane più pesanti e di scarico.'],
            ['⚖️','Surplus preciso','Monitora peso e macro e aggiusta ogni 2–3 settimane.'],
-           ['😴','Recupero','Sonno e riposo fanno crescere quanto l\'allenamento.']]}
-};
-const WEAK={
-  a:'Segui una scheda fissa con 2–3 allenamenti glutei a settimana e annota i carichi.',
-  t:'Rallenta l\'esecuzione, cura la posizione del bacino e lavora più vicino al cedimento.',
-  n:'Proteine a ogni pasto e un leggero surplus calorico: usa il conteggio nell\'app.',
-  r:'Dormi 7–8 ore, bevi almeno 2 litri d\'acqua e controlla i progressi ogni 2–4 settimane.'
+           ['😴','Recupero','Sonno e riposo fanno crescere quanto l’allenamento.']]}
 };
 
 let i = 0, ans = [];
@@ -302,7 +280,7 @@ function render(){
   const p = Math.round(i/Q.length*100);
   $('pct').textContent = p+'%'; $('fill').style.width = p+'%';
   $('backBtn').style.visibility = i===0 ? 'hidden' : 'visible';
-  $('qbox').innerHTML = `<div class="fade"><span class="tag ${TAGC[q.ar]}">${TAGL[q.ar]}</span><div class="q">${q.q}</div>` +
+  $('qbox').innerHTML = `<div class="fade"><span class="tag ${q.tag}">${q.label}</span><div class="q">${q.q}</div>` +
     q.a.map((t,k)=>`<button class="opt ${ans[i]===k+1?'sel':''}" onclick="pick(${k+1},this)"><b>${'ABC'[k]}</b>${t}</button>`).join('') + `</div>`;
 }
 
@@ -315,17 +293,11 @@ function pick(v, el){
 function prev(){ if(i>0){ i--; render(); } }
 
 function result(){
-  const sc={}, mx={}; let tot=0, max=0;
-  Q.forEach((q,k)=>{ if(q.ar==='p') return; sc[q.ar]=(sc[q.ar]||0)+ans[k]-1; mx[q.ar]=(mx[q.ar]||0)+2; tot+=ans[k]-1; max+=2; });
-  const pct = tot/max;
-  const r = pct < 0.34 ? R.base : pct < 0.68 ? R.medio : R.avanzato;
+  // Principiante: almeno una A nelle domande 1-4. Avanzato: C in tutte e 5. Altrimenti Intermedio.
+  const r = ans.slice(0,4).includes(1) ? R.base : ans.every(v=>v===3) ? R.avanzato : R.medio;
   $('rTitle').textContent = r.title; $('rEmoji').textContent = r.emoji; $('rText').textContent = r.text;
+  $('rFreq').textContent = '📅 ' + r.freq;
   [1,2,3].forEach(n=>$('m'+n).classList.toggle('on', n<=r.on));
-  const keys=Object.keys(AREAS);
-  const weak=keys.reduce((w,k)=> sc[k]/mx[k] < sc[w]/mx[w] ? k : w, keys[0]);
-  $('rWeak').innerHTML = `<b>Da migliorare per primo: ${AREAS[weak]}.</b> ${WEAK[weak]}`;
-  $('rAreas').innerHTML = keys.map(k=>{const v=Math.round(sc[k]/mx[k]*100);return `<div class="area"><span>${AREAS[k]}</span><div class="tr"><i style="width:${Math.max(v,4)}%"></i></div><b>${v}%</b></div>`}).join('');
-  $('rProf').textContent = `Obiettivo: ${Q[0].a[ans[0]-1]} · Allenamento: ${Q[1].a[ans[1]-1].toLowerCase()}`;
   $('rFocus').innerHTML = r.focus.map(f=>`<li><span>${f[0]}</span><div><strong>${f[1]}</strong>${f[2]}</div></li>`).join('');
   show('result');
 }
