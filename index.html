@@ -173,7 +173,7 @@
     <div class="card section fade ccard">
       <div class="eyebrow">Il prossimo passo</div>
       <h3 class="ctitle">Apri <em>Sexy Glutes</em> 🍑</h3>
-      <a class="btn" href="https://sexyglutesbymarinabushaj.netlify.app" target="_blank" rel="noopener">Vai al sito</a>
+      <a class="btn" id="goSite" href="https://sexyglutesbymarinabushaj.netlify.app" target="_blank" rel="noopener">Vai al sito</a>
       <div class="url">sexyglutesbymarinabushaj.netlify.app</div>
       <button class="btn ghost" onclick="document.getElementById('homeGuide').scrollIntoView({behavior:'smooth'})">📲 Come metterla nella Home ↓</button>
     </div>
@@ -250,17 +250,17 @@ const Q=[
 ];
 
 const R = {
-  base:{title:'Principiante', freq:'2 allenamenti a settimana', emoji:'🌱', on:1,
+  base:{key:'base',title:'Principiante', freq:'2 allenamenti a settimana', emoji:'🌱', on:1,
     text:'Sei all’inizio del percorso, ed è il momento migliore: con le basi giuste i risultati arrivano in fretta.',
     focus:[['🍑','Tecnica prima dei carichi','Impara bene Hip Thrust, Stacchi Rumeni e Split Squat.'],
            ['📅','2 allenamenti a settimana','Costanza prima dell’intensità, con il giusto recupero.'],
            ['🥚','Proteine a ogni pasto','Tracciale nell’app: la barra ti dice quanto ti manca.']]},
-  medio:{title:'Intermedio', freq:'3 allenamenti a settimana', emoji:'🔥', on:2,
+  medio:{key:'intermedio',title:'Intermedio', freq:'3 allenamenti a settimana', emoji:'🔥', on:2,
     text:'Hai già una buona base. Ora serve struttura: carichi che salgono e un’alimentazione costante.',
     focus:[['📈','Sovraccarico progressivo','Annota pesi e ripetizioni e aumentali poco alla volta.'],
            ['🍽️','Leggero surplus calorico','Mangia un po’ di più ogni giorno, non solo nei giorni di allenamento.'],
            ['🎯','Target proteine fisso','Usa le ricette dell’app per arrivarci senza fatica.']]},
-  avanzato:{title:'Avanzato', freq:'3 allenamenti a settimana', emoji:'👑', on:3,
+  avanzato:{key:'avanzato',title:'Avanzato', freq:'3 allenamenti a settimana', emoji:'👑', on:3,
     text:'Sai già cosa fai. Il lavoro adesso è nei dettagli: volume, varietà e recupero.',
     focus:[['🏋️','Periodizza il volume','Alterna settimane più pesanti e di scarico.'],
            ['⚖️','Surplus preciso','Monitora peso e macro e aggiusta ogni 2–3 settimane.'],
@@ -295,6 +295,7 @@ function prev(){ if(i>0){ i--; render(); } }
 function result(){
   // Principiante: almeno una A nelle domande 1-4. Avanzato: C in tutte e 5. Altrimenti Intermedio.
   const r = ans.slice(0,4).includes(1) ? R.base : ans.every(v=>v===3) ? R.avanzato : R.medio;
+  $('goSite').href='https://sexyglutesbymarinabushaj.netlify.app/?livello='+r.key;
   $('rTitle').textContent = r.title; $('rEmoji').textContent = r.emoji; $('rText').textContent = r.text;
   $('rFreq').textContent = '📅 ' + r.freq;
   [1,2,3].forEach(n=>$('m'+n).classList.toggle('on', n<=r.on));
